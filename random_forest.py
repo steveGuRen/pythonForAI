@@ -1,10 +1,12 @@
 from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import joblib
 import pandas as pd
 import time
+import os
+import matplotlib.pyplot as plt
 
 # 记录起始时间
 start_time = time.time()
@@ -48,6 +50,7 @@ print("\n各特征的重要性：")
 print(importance_df)
 
 # 保存模型到指定文件夹
+os.makedirs('./result', exist_ok=True)
 model_filename = './result/random_forest_model.pkl'
 joblib.dump(rf_model, model_filename)
 print(f"\nModel saved to {model_filename}")
@@ -59,11 +62,28 @@ loaded_rf_model = joblib.load(model_filename)
 y_pred_loaded = loaded_rf_model.predict(X_test)
 
 # 输出性能
+#R²（R-squared）：表示模型解释变量对因变量变异的解释程度。R²的值介于0和1之间，越接近1，说明模型对数据的拟合程度越好，即模型解释变量对因变量的变异解释得越好
+#RMSE（Root Mean Square Error，均方根误差）：表示预测值与真实值之间的差异程度。RMSE的值越小，说明模型的预测精度越高
+#MAE（Mean Absolute Error，平均绝对误差）：也是衡量预测精度的一个指标。MAE的值越小，说明模型的预测误差越小
 print("\n性能指标：")
-print("Mean Squared Error:", mean_squared_error(y_test, y_pred_loaded))
+print("Mean Squared Error (MSE):", mean_squared_error(y_test, y_pred_loaded))
+print("Mean Absolute Error (MAE):", mean_absolute_error(y_test, y_pred_loaded))
 print("R^2 Score:", r2_score(y_test, y_pred_loaded))
 
 # 记录结束时间并计算总时长
 end_time = time.time()
 total_time = end_time - start_time
-print(f"\n程序运行总时长: {total_time:.2f} 秒")
+print(f"\n程序训练运行总时长: {total_time:.2f} 秒")
+
+
+# 可视化特征重要性, linux环境需要安装sudo apt-get install python3-tk，用于展示
+plt.figure(figsize=(10, 6))
+plt.barh(importance_df['Feature'], importance_df['Importance'], color='skyblue')
+#x轴文本
+plt.xlabel('Importance')
+#y轴文本
+plt.ylabel('Feature')
+#标题
+plt.title('Feature Importances')
+# plt.gca().invert_yaxis()  # 倒置 y 轴
+plt.show()
